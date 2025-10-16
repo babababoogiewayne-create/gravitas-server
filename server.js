@@ -533,9 +533,15 @@ wss.on('connection', (ws) => {
                     {
                         const {x, y, z} = message.pos;
                         const blockKey = `${x},${y},${z}`;
-                        worldChanges.set(blockKey, null); // Store the change
-                        removeBlock(x,y,z); // Update server world state
-                        broadcast({ type: 'blockBroken', pos: message.pos, id: playerId }, playerId);
+                        worldChanges.set(blockKey, null);
+                        removeBlock(x,y,z);
+        
+                        // Broadcast to all other clients
+                        broadcast({ 
+                            type: 'blockBroken', 
+                            pos: message.pos, 
+                            id: playerId 
+                        }, playerId);
                     }
                     break;
 
@@ -543,9 +549,16 @@ wss.on('connection', (ws) => {
                     {
                         const {x, y, z} = message.pos;
                         const blockKey = `${x},${y},${z}`;
-                        worldChanges.set(blockKey, message.blockType); // Store the change
-                        addBlock(x, y, z, message.blockType); // Update server world state
-                        broadcast({ type: 'blockPlaced', pos: message.pos, blockType: message.blockType, id: playerId }, playerId);
+                        worldChanges.set(blockKey, message.blockType);
+                        addBlock(x, y, z, message.blockType);
+        
+                        // Broadcast to all other clients
+                        broadcast({ 
+                            type: 'blockPlaced', 
+                            pos: message.pos, 
+                            blockType: message.blockType, 
+                            id: playerId 
+                        }, playerId);
                     }
                     break;
                 
