@@ -249,10 +249,6 @@ const chunkSize = 16;
 const seaLevel = -12;
 const bottomOfTheWorld = -worldHeight / 2;
 
-// --- NEW: Use a dynamic seed for deterministic world generation. ---
-const SEED = 'gravitas-' + Date.now();
-console.log(`[Server] Using world seed: ${SEED}`);
-
 const noise3D = createNoise3D(() => SEED);
 const terrainNoise = createNoise2D(() => SEED);
 const caveOpeningNoise = createNoise2D(() => SEED + '-caves');
@@ -484,12 +480,17 @@ wss.on('connection', (ws) => {
     };
     clients.set(playerId, metadata);
 
-    // --- REVISED: Send the new player their unique ID AND the world seed ---
-    ws.send(JSON.stringify({ type: 'welcome', id: playerId, seed: SEED }));
+    // --- REVISED: Send the new player their unique ID AND the entire world ---
+    ws.send(JSON.stringify({ type: 'welcome', id: playerId }));
 
-    // 2. Send the new player all the world changes that have happened so far
-    // The base world is generated identically on both server and client
-    ws.send(JSON.stringify({ type: 'worldState', changes: Array.from(worldChanges.entries()) }));
+    // 2. Send the COMPLETE world state (not just changes)
+    console.log('[Server] Sending complete world to player...');
+    const completeWorld = [];
+    for (const [key, block] of world.entries()) {
+        completeWorld.push([key, block.type]);
+    }
+    ws.send(JSON.stringify({ type: 'worldState', changes: completeWorld }));
+    console.log(`[Server] Sent ${completeWorld.length} blocks to player ${playerId}`);
     
     // 3. Send the state of all existing mobs
     ws.send(JSON.stringify({ type: 'mobsUpdate', mobs: Array.from(mobs.values()).map(serializeMob) }));
