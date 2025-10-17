@@ -1,4 +1,4 @@
-// A simple WebSocket server for Gravitas multiplayer
+// A simple WebSocket server for Gravitas multiplayer 
 
 const WebSocket = require('ws');
 const { createNoise2D, createNoise3D } = require('simplex-noise');
@@ -756,4 +756,5 @@ setInterval(() => {
     });
 
 }, 50); // Run physics and send updates 20 times per second
+
 
