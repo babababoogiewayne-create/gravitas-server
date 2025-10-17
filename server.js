@@ -3,6 +3,8 @@
 const WebSocket = require('ws');
 const { createNoise2D, createNoise3D } = require('simplex-noise');
 
+const SEED = Math.random().toString();
+
 // --- NEW: Vector3 and Box3 classes for server-side physics ---
 // A simplified version of THREE.js classes for server use.
 class Vector3 {
