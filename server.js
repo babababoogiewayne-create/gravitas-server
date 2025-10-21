@@ -1,4 +1,4 @@
-// A simple WebSocket server for Gravitas multiplayer 
+// A simple WebSocket server for Gravitas multiplayer
 
 const WebSocket = require('ws');
 const { createNoise2D, createNoise3D } = require('simplex-noise');
@@ -397,11 +397,16 @@ console.log(`Gravitas server is listening on port ${PORT}`);
 // Helper function to broadcast a message to all clients (can exclude the sender)
 function broadcast(message, senderId = null) {
     const messageString = JSON.stringify(message);
+    console.log(`[Server] Broadcasting message type "${message.type}" from ${senderId}, to ${clients.size} total clients`);
+    let sentCount = 0;
     for (const [clientId, client] of clients.entries()) {
         if (clientId !== senderId && client.ws.readyState === WebSocket.OPEN) {
             client.ws.send(messageString);
+            sentCount++;
+            console.log(`[Server]   -> Sent to ${clientId}`);
         }
     }
+    console.log(`[Server] Broadcast sent to ${sentCount} clients`);
 }
 
 // Function to spawn a slime on the server
@@ -525,11 +530,14 @@ wss.on('connection', (ws) => {
             // Handle different message types
             switch (message.type) {
                 case 'playerMoved':
+                    console.log(`[Server] Received playerMoved from ${playerId}`);
                     sender.data.position = message.data.position;
-                    sender.data.velocity = message.data.velocity; // NEW: Receive player velocity
+                    sender.data.velocity = message.data.velocity;
                     sender.data.quaternion = message.data.quaternion;
                     sender.data.headQuaternion = message.data.headQuaternion;
+                    console.log(`[Server] Broadcasting playerMoved for ${playerId} to other clients`);
                     broadcast({ type: 'playerMoved', id: playerId, data: sender.data }, playerId);
+                    console.log(`[Server] Broadcast complete`);
                     break;
                 
                 case 'blockBroken':
@@ -756,5 +764,4 @@ setInterval(() => {
     });
 
 }, 50); // Run physics and send updates 20 times per second
-
 
